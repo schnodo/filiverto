@@ -11,7 +11,7 @@ filiverto checks for "file links" and for links in the comments field.
 
 ![Screenshot of ToDoList preferences with filiverto set up as user-defined tool](https://github.com/schnodo/filiverto/blob/screenshots/filiverto_user-defined-tool.jpg)
 
-filiverto can be used a user-defined tool in ToDoList, making it possible to verify the currently active task list.
+filiverto can be used as user-defined tool in ToDoList, making it possible to verify the currently active task list.
 
 filiverto is written in Python.
 
