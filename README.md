@@ -6,11 +6,14 @@ File Link Verifier for Abstractspoon's ToDoList
 filiverto checks XML task lists in [Abstractspoon's ToDoList](https://github.com/abstractspoon/ToDoList_8.1) format for dangling file references. Those are most commonly caused by 
   - moving the task list to another directory or
   - by moving/deleting the referenced files or folders.
+  
 filiverto checks for "file links" and for links in the comments field.
 
 ![Screenshot of ToDoList preferences with filiverto set up as user-defined tool](https://github.com/schnodo/filiverto/blob/screenshots/filiverto_user-defined-tool.jpg)
 
-filiverto can be used a user-defined tool in ToDoList, making it possible to verify the currently active task list. filiverto is written in Python.
+filiverto can be used a user-defined tool in ToDoList, making it possible to verify the currently active task list.
+
+filiverto is written in Python.
 
 ## How it works
 Currently, it does the following:
@@ -54,10 +57,10 @@ Currently, it does the following:
 ## Limitations
 <ul>
   <li>filiverto does not verify hyperlinks (<code>http(s)://</code>)</li>
-  <li>The search patterns for the <code>COMMENTS</code> element are not fully reliable. They and will in some cases</li>
+  <li>The search patterns for the <code>COMMENTS</code> element are not fully reliable. They will in some cases</li>
   <ul>
     <li>not match all possible combinations of legal characters or</li>
-    <li>match more characters than desired, for example in this case:<code>todolist.exe -cmd 32828</code></li>
+    <li>match more characters than desired, for example in this case: <code>todolist.exe -cmd 32828</code></li>
   </ul>
 </ul>
 
