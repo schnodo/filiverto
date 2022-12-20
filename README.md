@@ -26,7 +26,7 @@ Currently, it does the following:
   <li>An XML parser parses the task list.</li><br>
 </ol>
 
-### Extract  
+### Extract and Verify
 <ol>
   <li>All links and their respective parent's task <code>IDs</code> are extracted into a list. (The <code>ID</code> makes it easier to find the problematic tasks when cleaning up the task list afterwards.) First, <code>FILEREFPATH</code> elements are handled, then <code>COMMENTS</code>.</li>
   <ul>
