@@ -56,7 +56,7 @@ Currently, it does the following:
 
 ## Limitations
 <ul>
-  <li>filiverto does not verify hyperlinks (<code>http(s)://</code>)</li>
+  <li>filiverto does not verify other kinds of hyperlinks, such as those that typically link to a website on the Internet (<code>http(s)://</code>)</li>
   <li>The search patterns for the <code>COMMENTS</code> element are not fully reliable. They will in some cases</li>
   <ul>
     <li>not match all possible combinations of legal characters or</li>
@@ -65,7 +65,7 @@ Currently, it does the following:
 </ul>
 
 ## Next steps
-- Figure out how to make filiverto usable without much configuration
+- Make filiverto usable without having to install every single package via the command line.<br/>requirements.txt seems to be the way to go.
 - Improve the search patterns for better coverage
 - Improve the documentation of the source code
 - Improve general code quality
