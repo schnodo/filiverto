@@ -34,7 +34,7 @@ Currently, it does the following:
     <li>For <code>COMMENTS</code>, matching against a few patterns is necessary because a comment field might contain multiple links, which have to be separated from the surrounding text.</li>
   </ul>
   <li>One by one the links are cleaned up and checked.</li>
-  <ul>
+  <ol>
     <li><code>tdl://</code> references get special treatment</li>
       <ul>
         <li>Direct links within the task list (<code>tdl://1234</code>) are ignored.</li>
@@ -45,7 +45,7 @@ Currently, it does the following:
     <li>The protocol identifier (<code>tdl://</code> and <code>file://</code>) is removed.</li>
     <li>What remains, hopefully is a file name and its existence is verified.</li>
     <li>If a file is not found, it is added to the list of missing references.</li>
-  </ul>    
+  </ol>    
 </ol>
 
 ### Report
