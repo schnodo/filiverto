@@ -159,9 +159,9 @@ if not missing_files:
     exit(0)
 
 if len(missing_files) > 1:
-    msg_text = " defective file links were found"
+    msg_text = " defective file links were found."
 else:
-    msg_text = " defective file link was found"
+    msg_text = " defective file link was found."
 
 messagebox.showinfo(title="Process completed", message = str(num_links) + " links checked.\n" + str(len(missing_files)) + msg_text)
 
