@@ -5,13 +5,16 @@
 import os
 from sys import exit
 from sys import argv
-from lxml import etree
 import csv
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import messagebox
 import urllib.parse
 import re
+
+# lxml is not part of the standard library.
+# Install it from the command line with "pip install lxml"
+from lxml import etree
 
 # Format tdl:// links so that they can be used with file operations
 def format_tdl_protocol(link):
@@ -61,9 +64,9 @@ def process_COMMENTS(xml_tree):
     def process_tdls(proc_id, matches, missing_files):
         for match in matches:
             link = format_tdl_protocol(match[0])
-            if link.isnumeric():
-                # Link to a task in the same ToDoList, nothing to do
-                continue 
+            if len(link.strip()) == 0 or link.isnumeric():
+                # Empty link or link to a task in the same ToDoList; nothing to do
+                continue
             check_and_add(proc_id, link, missing_files)
 
     missing_files = []
@@ -78,22 +81,35 @@ def process_COMMENTS(xml_tree):
         process_tdls(id, matches, missing_files)
         checked_links += len(matches)
 
-        # Check for tdl:// without spaces
-        matches = re.findall("[^<](tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)", comments)
+        # Check for tdl:// in parentheses; In that case, the trailing parenthesis
+        # has to be excluded from the file path
+        matches = re.findall("\((tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)\)", comments)
+        process_tdls(id, matches, missing_files)
+        checked_links += len(matches)
+
+        # Check for tdl:// without spaces, not embedded in brackes or parentheses
+        matches = re.findall("(?<!\()(?<!<)(tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)", comments)
         process_tdls(id, matches, missing_files)
         checked_links += len(matches)
 
         # Check file links that include spaces, embedded in "<>" characters
-        matches = re.findall("<file:///?(([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>", comments)
+        matches = re.findall("<file:/{2,3}(([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>", comments)
         for match in matches:
             check_and_add(id, match[0], missing_files)
-        checked_links += len(matches)            
+        checked_links += len(matches)
+
+        # Check file links in parentheses; In that case, the trailing parenthesis
+        # has to be excluded from the file path
+        matches = re.findall("\(\s?file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)", comments)
+        for match in matches:
+            check_and_add(id, match[0], missing_files)
+        checked_links += len(matches)
 
         # Check file links without spaces
-        matches = re.findall("[^<]file:///?(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)", comments)
+        matches = re.findall("(?<!\(\s)(?<!\()(?<!<)file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)", comments)
         for match in matches:
             check_and_add(id, match[0], missing_files)
-        checked_links += len(matches)            
+        checked_links += len(matches)
 
     return missing_files, checked_links
 
