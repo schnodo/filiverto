@@ -1,6 +1,7 @@
-# Check if files that are referenced by ToDoList file links actually exist.
-# If not, write the Task IDs and file names to missing_files.csv.
-# Hyperlinks are not checked.
+# Check if files that are referenced by task list file links actually exist.
+# If not, write the Task IDs and defective file links to a CSV file.
+# Only tdl:// and file:// links are checked; so no validation of links to the 
+# Internet is performed.
 
 import os
 from sys import exit
@@ -77,36 +78,34 @@ def process_COMMENTS(xml_tree):
         comments = ref.text
 
         # Check for tdl:// that includes spaces, marked by a "<" character
-        matches = re.findall("<(tdl://([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>", comments)
-        process_tdls(id, matches, missing_files)
-        checked_links += len(matches)
-
+        re_tdl_spaces = r"<(tdl://([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>"
         # Check for tdl:// in parentheses; In that case, the trailing parenthesis
         # has to be excluded from the file path
-        matches = re.findall("\((tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)\)", comments)
-        process_tdls(id, matches, missing_files)
-        checked_links += len(matches)
-
+        re_tdl_parentheses = r"\((tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)\)"
         # Check for tdl:// without spaces, not embedded in brackes or parentheses
-        matches = re.findall("(?<!\()(?<!<)(tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)", comments)
+        re_tdl_no_spaces = r"(?<!\()(?<!<)(tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)"
+
+        matches = []
+        patterns = [re_tdl_spaces, re_tdl_parentheses, re_tdl_no_spaces]
+        for pattern in patterns:
+            matches += re.findall(pattern, comments)
+
         process_tdls(id, matches, missing_files)
         checked_links += len(matches)
 
-        # Check file links that include spaces, embedded in "<>" characters
-        matches = re.findall("<file:/{2,3}(([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>", comments)
-        for match in matches:
-            check_and_add(id, match[0], missing_files)
-        checked_links += len(matches)
-
-        # Check file links in parentheses; In that case, the trailing parenthesis
+        # Check for file:// that includes spaces, embedded in "<>" characters
+        re_file_spaces = r"<file:/{2,3}(([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>"
+        # Check for file:// in parentheses; In that case, the trailing parenthesis
         # has to be excluded from the file path
-        matches = re.findall("\(\s?file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)", comments)
-        for match in matches:
-            check_and_add(id, match[0], missing_files)
-        checked_links += len(matches)
+        re_file_parentheses = r"\(\s?file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)"
+        # Check for file:// without spaces, not embedded in brackes or parentheses
+        re_file_no_spaces = r"(?<!\(\s)(?<!\()(?<!<)file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)"
 
-        # Check file links without spaces
-        matches = re.findall("(?<!\(\s)(?<!\()(?<!<)file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)", comments)
+        matches = []
+        patterns = [re_file_spaces, re_file_parentheses, re_file_no_spaces]
+        for pattern in patterns:
+            matches += re.findall(pattern, comments)
+
         for match in matches:
             check_and_add(id, match[0], missing_files)
         checked_links += len(matches)
@@ -152,7 +151,7 @@ else:
 if os.path.isfile(file_path) == False:
     if len(argv) > 1:
         messagebox.showinfo(title="File not found", 
-        message = "The file \n" + file_path + "\ncould not be found.")        
+        message = "The file \n" + file_path + "\ncould not be found.")
     exit(1)
 
 # Set working directory to make sure that relative file links will be evaluated correctly.
@@ -181,5 +180,5 @@ else:
 
 messagebox.showinfo(title="Process completed", message = str(num_links) + " links checked.\n" + str(len(missing_files)) + msg_text)
 
-save_csv_report(file_path, missing_files)            
+save_csv_report(file_path, missing_files)    
 exit(0)
