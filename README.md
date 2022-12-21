@@ -68,9 +68,12 @@ Currently, it does the following:
   <li>The search patterns for the <code>COMMENTS</code> element are not fully reliable. They will in some cases</li>
   <ul>
     <li>not match all possible combinations of legal characters or</li>
-    <li>match more characters than desired, for example in this case: <code>todolist.exe -cmd 32828</code></li>
+    <li>match more characters than desired, for example when providing arguments to an executable: <code>todolist.exe -cmd 32828</code><br/>
+    Unfortunately that's a semantic problem because this also represents a legal file name as you can see in the screenshot. Maybe next year I'll program the AI to keep them apart. 😉</li>
   </ul>
 </ul>
+
+![Example of a legal Windows file name that does not look legal](https://github.com/schnodo/filiverto/blob/screenshots/unexpectedly_legal_file_name.jpg)
 
 ## Next steps
 - Figure out if it is possible to make filiverto usable without having to install packages via the command line.<br/>requirements.txt seems to be the way to go.
