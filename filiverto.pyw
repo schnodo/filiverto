@@ -28,12 +28,15 @@ def format_tdl_protocol(link):
     return link
 
 # Verify that a file exists; if it is missing, add it to the list of missing files
-def check_and_add(id, link, missing_files):
+# full_link contains the match as it was found and how it will appear in the report.
+# clean_link is the content of full_link formatted so that it can be used to verify
+# the existence of the file or directory.
+def check_and_add(id, full_link, clean_link, missing_files):
     # clean up %20 characters as in tdl://todolist%20test.tdl
-    link = urllib.parse.unquote(link)
+    clean_link = urllib.parse.unquote(clean_link)
 
-    if os.path.isfile(link) == False and os.path.isdir(link) == False:
-        missing_files.append({"id": id, "file": link})
+    if os.path.isfile(clean_link) == False and os.path.isdir(clean_link) == False:
+        missing_files.append({"id": id, "file": full_link})
         return True
     else:
         return False
@@ -45,18 +48,19 @@ def process_FILEREFPATH(xml_tree):
     refpaths = xml_tree.xpath("//FILEREFPATH")
     for refpath in refpaths:
         id = refpath.getparent().attrib['ID']
-        link = refpath.text
+        full_link = refpath.text
         # Check tdl:// links
-        if "tdl://" in link:
-            link = format_tdl_protocol(link)
-            if link.isnumeric():
+        if "tdl://" in full_link:
+            clean_link = format_tdl_protocol(full_link)
+            if clean_link.isnumeric():
                 # Link to a task in the same ToDoList, nothing to do
                 continue
-            if check_and_add(id, link, missing_files):
+            if check_and_add(id, full_link, clean_link, missing_files):
                 continue
         # All other protocols/hyperlinks are ignored
-        if "//" not in link:
-            check_and_add(id, link, missing_files)
+        if "//" not in full_link:
+            # In this case, the full link and the clean link are the same
+            check_and_add(id, full_link, full_link, missing_files)
     return missing_files, len(refpaths)
 
 # Gather defective links from the COMMENTS element
@@ -64,11 +68,12 @@ def process_COMMENTS(xml_tree):
     # Check list of tdl:// links
     def process_tdls(proc_id, matches, missing_files):
         for match in matches:
-            link = format_tdl_protocol(match[0])
-            if len(link.strip()) == 0 or link.isnumeric():
+            full_link = match[0]
+            clean_link = format_tdl_protocol(full_link)
+            if len(clean_link.strip()) == 0 or clean_link.isnumeric():
                 # Empty link or link to a task in the same ToDoList; nothing to do
                 continue
-            check_and_add(proc_id, link, missing_files)
+            check_and_add(proc_id, full_link, clean_link,  missing_files)
 
     missing_files = []
     checked_links = 0
@@ -94,12 +99,12 @@ def process_COMMENTS(xml_tree):
         checked_links += len(matches)
 
         # Check for file:// that includes spaces, embedded in "<>" characters
-        re_file_spaces = r"<file:/{2,3}(([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>"
+        re_file_spaces = r"<(file:/{2,3}(([a-zA-Z]:)?[/\\.\w\s\-,()_]*))>"
         # Check for file:// in parentheses; In that case, the trailing parenthesis
         # has to be excluded from the file path
-        re_file_parentheses = r"\(\s?file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)"
+        re_file_parentheses = r"\(\s?(file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*))"
         # Check for file:// without spaces, not embedded in brackes or parentheses
-        re_file_no_spaces = r"(?<!\(\s)(?<!\()(?<!<)file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*)"
+        re_file_no_spaces = r"(?<!\(\s)(?<!\()(?<!<)(file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*))"
 
         matches = []
         patterns = [re_file_spaces, re_file_parentheses, re_file_no_spaces]
@@ -107,7 +112,9 @@ def process_COMMENTS(xml_tree):
             matches += re.findall(pattern, comments)
 
         for match in matches:
-            check_and_add(id, match[0], missing_files)
+            full_link = match[0]
+            clean_link = match[1]
+            check_and_add(id, full_link, clean_link, missing_files)
         checked_links += len(matches)
 
     return missing_files, checked_links
