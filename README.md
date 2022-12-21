@@ -15,6 +15,14 @@ filiverto can be used as user-defined tool in ToDoList, making it possible to ve
 
 filiverto is written in Python.
 
+## Setup and execution
+Assuming that Python is already installed on your system, simply copy the files contained in the repository into a directory and run <code>filiverto.pyw</code>.<br/>
+
+If you haven't installed Python yet, you can download the most current version from the [Python website](https://www.python.org/downloads/). filiverto was tested with Python 3.10.
+
+filiverto uses the xlml package, which is not part of the standard library. If you don't have it installed already, add it by executing this command in a console:<br/>
+<code>pip install lxml</code>
+
 ## How it works
 Currently, it does the following:
 
@@ -65,7 +73,7 @@ Currently, it does the following:
 </ul>
 
 ## Next steps
-- Make filiverto usable without having to install every single package via the command line.<br/>requirements.txt seems to be the way to go.
+- Figure out if it is possible to make filiverto usable without having to install packages via the command line.<br/>requirements.txt seems to be the way to go.
 - Improve the search patterns for better coverage
 - Improve the documentation of the source code
 - Improve general code quality
