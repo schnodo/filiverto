@@ -17,108 +17,84 @@ import re
 # Install it from the command line with "pip install lxml"
 from lxml import etree
 
-# Format tdl:// links so that they can be used with file operations
-def format_tdl_protocol(link):
-    # Remove the protocol identifier
-    link = link[6:]
-    # Remove direct task id references for other task lists, such as tdl://test.tdl?1234
-    id_pos = link.find("?")
-    if id_pos != -1:
-        link = link[:id_pos]
-    return link
-
 # Verify that a file exists; if it is missing, add it to the list of missing files
 # full_link contains the match as it was found and how it will appear in the report.
 # clean_link is the content of full_link formatted so that it can be used to verify
 # the existence of the file or directory.
-def check_and_add(id, full_link, clean_link, missing_files):
-    # clean up %20 characters as in tdl://todolist%20test.tdl
-    clean_link = urllib.parse.unquote(clean_link)
+def check_and_add(id, full_link, missing_files):
+    if "tdl://" in full_link:
+        # Remove the protocol identifier and direct task id references
+        # for other task lists, such as tdl://test.tdl?1234.
+        # Remove potentially trailing period characters from the punctuation
+        # in the surrounding text; a legal file name must not end with a period.            
+        clean_link = re.sub(r"tdl:/{2,3}", "", full_link)    
+        clean_link = clean_link.split("?", 1)[0].rstrip(".")
 
-    if len(clean_link.strip()) == 0:
-        return False
+        if len(clean_link.strip()) == 0 or clean_link.isnumeric():
+            # Empty link or link to a task in the same ToDoList; nothing to do
+            return
+    elif "file://" in full_link:
+        clean_link = re.sub(r"file:/{2,3}", "", full_link)
+        clean_link = clean_link.rstrip(".")
+        if len(clean_link.strip()) == 0:
+            # Empty link; nothing to do
+            return
+    elif "//" in full_link:
+        # All other protocols/hyperlinks are ignored        
+        return
+    else:
+        # If there is no preceding protocol identifiier, 
+        # the full link and the clean link are the same
+        clean_link = full_link
+
+    # Clean up %20 characters as in tdl://todolist%20test.tdl.
+    clean_link = urllib.parse.unquote(clean_link)
 
     if os.path.isfile(clean_link) == False and os.path.isdir(clean_link) == False:
         missing_files.append({"id": id, "file": full_link})
-        return True
-    else:
-        return False
+    return
 
-# Gather defective links from the FILEREFPATH element
+# Gather and check links from the FILEREFPATH element
 def process_FILEREFPATH(xml_tree):
     missing_files = []
-    checked_links = 0
-    refpaths = xml_tree.xpath("//FILEREFPATH")
-    for refpath in refpaths:
-        id = refpath.getparent().attrib['ID']
-        full_link = refpath.text
-        # Check tdl:// links
-        if "tdl://" in full_link:
-            clean_link = format_tdl_protocol(full_link)
-            if len(clean_link.strip()) == 0 or clean_link.isnumeric():
-                # Empty link or link to a task in the same ToDoList; nothing to do
-                continue
-            if check_and_add(id, full_link, clean_link, missing_files):
-                continue
-        # All other protocols/hyperlinks are ignored
-        if "//" not in full_link:
-            # In this case, the full link and the clean link are the same
-            check_and_add(id, full_link, full_link, missing_files)
-    return missing_files, len(refpaths)
+    filerefpaths = xml_tree.xpath("//FILEREFPATH")
+    for filerefpath in filerefpaths:
+        id = filerefpath.getparent().attrib['ID']
+        full_link = filerefpath.text
+        check_and_add(id, full_link, missing_files)
 
-# Gather defective links from the COMMENTS element
+    return missing_files, len(filerefpaths)
+
+# Gather and check links from the COMMENTS element
 def process_COMMENTS(xml_tree):
-    # Check list of tdl:// links
-    def process_tdls(proc_id, matches, missing_files):
-        for match in matches:
-            full_link = match[0]
-            clean_link = format_tdl_protocol(full_link)
-            if len(clean_link.strip()) == 0 or clean_link.isnumeric():
-                # Empty link or link to a task in the same ToDoList; nothing to do
-                continue
-            check_and_add(proc_id, full_link, clean_link,  missing_files)
-
     missing_files = []
     checked_links = 0
-    refs = xml_tree.xpath("//COMMENTS")
-    for ref in refs:
-        id = ref.getparent().attrib['ID']    
-        comments = ref.text
+    comments_elements = xml_tree.xpath("//COMMENTS")
 
-        # Check for tdl:// that includes spaces, marked by a "<" character
-        re_tdl_spaces = r"<(tdl://([a-zA-Z]:)?[/\\.\w\s\-,()_]*)>"
-        # Check for tdl:// in parentheses; In that case, the trailing parenthesis
+    for comment_element in comments_elements:
+        id = comment_element.getparent().attrib['ID']
+        comments = comment_element.text
+
+        # Match tdl:// that includes spaces, marked by a "<" character
+        re_tdl_spaces = r"(?<=<)tdl://(?:[A-z]:)?[^<>\*\"|?:]*(?=>)"
+        # Match tdl:// in parentheses; In that case, the trailing parenthesis
         # has to be excluded from the file path
-        re_tdl_parentheses = r"\((tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)\)"
-        # Check for tdl:// without spaces, not embedded in brackes or parentheses
-        re_tdl_no_spaces = r"(?<!\()(?<!<)(tdl://([a-zA-Z]:)?[^\s<>\*\"|?]*)"
+        re_tdl_parentheses = r"(?<=\()tdl://(?:[A-z]:)?[^\s<>\*\"|?:]*(?=\))"
+        # Match tdl:// without spaces, not embedded in brackes or parentheses
+        re_tdl_no_spaces = r"(?<!\()(?<!<)tdl://(?:[A-z]:)?[^\s<>\*\"|?:]*"
+        # Match file:// that includes spaces, embedded in "<>" characters
+        re_file_spaces = r"(?<=<)file:/{2,3}(?:[A-z]:)?[^<>\*\"|?:]*(?=>)"
+        # Match file:// in parentheses; In that case, the trailing parenthesis
+        # has to be excluded from the file path; there must not be any spaces
+        re_file_no_spaces = r"(?<!\()(?<!<)file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*|(?<=\()file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*(?=\))"
 
         matches = []
-        patterns = [re_tdl_spaces, re_tdl_parentheses, re_tdl_no_spaces]
-        for pattern in patterns:
-            matches += re.findall(pattern, comments)
-
-        process_tdls(id, matches, missing_files)
-        checked_links += len(matches)
-
-        # Check for file:// that includes spaces, embedded in "<>" characters
-        re_file_spaces = r"<(file:/{2,3}(([a-zA-Z]:)?[/\\.\w\s\-,()_]*))>"
-        # Check for file:// in parentheses; In that case, the trailing parenthesis
-        # has to be excluded from the file path
-        re_file_parentheses = r"(?<=\()\s?(file:/{2,3}(([a-zA-Z]:)?([/\\.\w\-,()_])*))(?=\))"
-        # Check for file:// without spaces, not embedded in brackes or parentheses
-        re_file_no_spaces = r"(?<!\(\s)(?<!\()(?<!<)(file:/{2,3}(([a-zA-Z]:)?[/\\.\w\-,()_]*))"
-
-        matches = []
-        patterns = [re_file_spaces, re_file_parentheses, re_file_no_spaces]
-        for pattern in patterns:
+        for pattern in [re_tdl_spaces, re_tdl_parentheses, re_tdl_no_spaces, re_file_spaces, re_file_no_spaces]:
             matches += re.findall(pattern, comments)
 
         for match in matches:
-            full_link = match[0]
-            clean_link = match[1]
-            check_and_add(id, full_link, clean_link, missing_files)
-        checked_links += len(matches)
+            check_and_add(id, match, missing_files)
+            checked_links += len(matches)
 
     return missing_files, checked_links
 
@@ -127,7 +103,8 @@ def save_csv_report(file_path, missing_files):
     # newline='' is necessary to prevent Excel from showing empty lines.
     # utf-8-sig needs to be chosen as encoding because Excel expects a BOM, 
     # otherwise umlauts are not properly displayed.
-    with open(file_path[0:len(file_path) - 4] + "_missing_files.csv", 'w', newline='',encoding='utf-8-sig') as csvfile:
+    report_file = file_path.rstrip(".tdl") + "_missing_files.csv"
+    with open(report_file, 'w', newline='',encoding='utf-8-sig') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         # CSV header row
@@ -156,7 +133,10 @@ if len(argv) > 2:
 elif len(argv) > 1:
     file_path = argv[1]
 else:
-    file_path = filedialog.askopenfilename(initialdir=".", title = "Choose ToDoList for verifying file links", filetypes=[("Abstractspoon ToDoList", ".tdl")])
+    file_path = filedialog.askopenfilename(
+        initialdir=".", 
+        title = "Choose ToDoList for verifying file links", 
+        filetypes=[("Abstractspoon ToDoList", ".tdl")])
 
 if os.path.isfile(file_path) == False:
     if len(argv) > 1:
@@ -180,7 +160,10 @@ missing_files = missing_filerefpath_files + missing_comments_files
 num_links = num_filerefpath_links + num_comments_links
 
 if not missing_files:
-    messagebox.showinfo(title="Process completed", message = str(num_links) + " links checked.\n" + "Congratulations! There are no dangling file references.")
+    messagebox.showinfo(
+        title="Process completed", 
+        message = str(num_links) + f" link{'s'[:num_links^1]} checked.\n" + 
+            "Congratulations! There are no dangling file references.")
     exit(0)
 
 if len(missing_files) > 1:
@@ -188,7 +171,10 @@ if len(missing_files) > 1:
 else:
     msg_text = " defective file link was found."
 
-messagebox.showinfo(title="Process completed", message = str(num_links) + " links checked.\n" + str(len(missing_files)) + msg_text)
+save_csv_report(file_path, missing_files)
+messagebox.showinfo(
+    title="Process completed", 
+    message = str(num_links) + " links checked.\n" + 
+    str(len(missing_files)) + msg_text)
 
-save_csv_report(file_path, missing_files)    
 exit(0)
