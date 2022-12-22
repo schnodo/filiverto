@@ -35,6 +35,9 @@ def check_and_add(id, full_link, clean_link, missing_files):
     # clean up %20 characters as in tdl://todolist%20test.tdl
     clean_link = urllib.parse.unquote(clean_link)
 
+    if len(clean_link.strip()) == 0:
+        return False
+
     if os.path.isfile(clean_link) == False and os.path.isdir(clean_link) == False:
         missing_files.append({"id": id, "file": full_link})
         return True
@@ -52,8 +55,8 @@ def process_FILEREFPATH(xml_tree):
         # Check tdl:// links
         if "tdl://" in full_link:
             clean_link = format_tdl_protocol(full_link)
-            if clean_link.isnumeric():
-                # Link to a task in the same ToDoList, nothing to do
+            if len(clean_link.strip()) == 0 or clean_link.isnumeric():
+                # Empty link or link to a task in the same ToDoList; nothing to do
                 continue
             if check_and_add(id, full_link, clean_link, missing_files):
                 continue
@@ -102,9 +105,9 @@ def process_COMMENTS(xml_tree):
         re_file_spaces = r"<(file:/{2,3}(([a-zA-Z]:)?[/\\.\w\s\-,()_]*))>"
         # Check for file:// in parentheses; In that case, the trailing parenthesis
         # has to be excluded from the file path
-        re_file_parentheses = r"\(\s?(file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*))"
+        re_file_parentheses = r"(?<=\()\s?(file:/{2,3}(([a-zA-Z]:)?([/\\.\w\-,()_])*))(?=\))"
         # Check for file:// without spaces, not embedded in brackes or parentheses
-        re_file_no_spaces = r"(?<!\(\s)(?<!\()(?<!<)(file:/{2,3}(([a-zA-Z]:)?([^\s<>]|[/\\.\w\-,()_])*))"
+        re_file_no_spaces = r"(?<!\(\s)(?<!\()(?<!<)(file:/{2,3}(([a-zA-Z]:)?[/\\.\w\-,()_]*))"
 
         matches = []
         patterns = [re_file_spaces, re_file_parentheses, re_file_no_spaces]
