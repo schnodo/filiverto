@@ -5,19 +5,18 @@
 # Only tdl:// and file:// links are checked; so no validation of links to the
 # Internet is performed.
 
-import os
-from sys import exit
-from sys import argv
 import csv
-import tkinter as tk
-from tkinter import filedialog
-from tkinter import messagebox
-import urllib.parse
+import os
 import re
+import tkinter as tk
+import urllib.parse
+from sys import argv, exit
+from tkinter import filedialog, messagebox
 
 # lxml is not part of the standard library.
 # Install it from the command line with "pip install lxml"
 from lxml import etree
+
 
 # Verify that a file exists; if it is missing, add it to the list of missing
 # files.
