@@ -1,9 +1,9 @@
 # filiverto
-File Link Verifier for Abstractspoon's ToDoList
+File Link Verifier for AbstractSpoon's ToDoList
 
 ## About
 
-filiverto checks XML task lists in [Abstractspoon's ToDoList](https://github.com/abstractspoon/ToDoList_8.1) format for dangling file references. Those are most commonly caused by 
+filiverto checks XML task lists in [AbstractSpoon's ToDoList](https://github.com/abstractspoon/ToDoList_8.1) format for dangling file references. Those are most commonly caused by 
   - moving the task list to another directory or
   - by moving/deleting the referenced files or folders.
   
