@@ -1,3 +1,5 @@
+# filiverto is the File Link Verifier for AbstractSpoon's ToDoList.
+#
 # Check if files that are referenced by task list file links actually exist.
 # If not, write the Task IDs and defective file links to a CSV file.
 # Only tdl:// and file:// links are checked; so no validation of links to the 
@@ -17,10 +19,12 @@ import re
 # Install it from the command line with "pip install lxml"
 from lxml import etree
 
-# Verify that a file exists; if it is missing, add it to the list of missing files
-# full_link contains the match as it was found and how it will appear in the report.
-# clean_link is the content of full_link formatted so that it can be used to verify
-# the existence of the file or directory.
+# Verify that a file exists; if it is missing, add it to the list of missing
+# files.
+# full_link contains the match as it was found and how it will appear
+# in the report. 
+# clean_link is the content of full_link formatted so that it can be used to
+# verify the existence of the file or directory.
 def check_and_add(id, full_link, missing_files):
     if "tdl://" in full_link:
         # Remove the protocol identifier and direct task id references
@@ -50,7 +54,8 @@ def check_and_add(id, full_link, missing_files):
     # Clean up %20 characters as in tdl://todolist%20test.tdl.
     clean_link = urllib.parse.unquote(clean_link)
 
-    if os.path.isfile(clean_link) == False and os.path.isdir(clean_link) == False:
+    if os.path.isfile(clean_link) == False and \
+                os.path.isdir(clean_link) == False:
         missing_files.append({"id": id, "file": full_link})
     return
 
@@ -62,7 +67,6 @@ def process_FILEREFPATH(xml_tree):
         id = filerefpath.getparent().attrib['ID']
         full_link = filerefpath.text
         check_and_add(id, full_link, missing_files)
-
     return missing_files, len(filerefpaths)
 
 # Gather and check links from the COMMENTS element
@@ -86,16 +90,18 @@ def process_COMMENTS(xml_tree):
         re_file_spaces = r"(?<=<)file:/{2,3}(?:[A-z]:)?[^<>\*\"|?:]*(?=>)"
         # Match file:// in parentheses; In that case, the trailing parenthesis
         # has to be excluded from the file path; there must not be any spaces
-        re_file_no_spaces = r"(?<!\()(?<!<)file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*|(?<=\()file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*(?=\))"
+        re_file_no_spaces = \
+                r"(?<!\()(?<!<)file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*|" +\
+                r"(?<=\()file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*(?=\))"
 
         matches = []
-        for pattern in [re_tdl_spaces, re_tdl_parentheses, re_tdl_no_spaces, re_file_spaces, re_file_no_spaces]:
+        for pattern in [re_tdl_spaces, re_tdl_parentheses, 
+                        re_tdl_no_spaces, re_file_spaces, 
+                        re_file_no_spaces]:
             matches += re.findall(pattern, comments)
-
-        for match in matches:
+        for match in matches:     
             check_and_add(id, match, missing_files)
-            checked_links += len(matches)
-
+        checked_links += len(matches)
     return missing_files, checked_links
 
 # Save the missing files report as "<<ToDoList name>>_missing_files.csv"
@@ -105,7 +111,8 @@ def save_csv_report(file_path, missing_files):
     # otherwise umlauts are not properly displayed.
     report_file = file_path.rstrip(".tdl") + "_missing_files.csv"
     with open(report_file, 'w', newline='',encoding='utf-8-sig') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csvwriter = csv.writer(csvfile, delimiter=',', 
+                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         # CSV header row
         csvwriter.writerow(["Task ID", "File Link"])
@@ -128,7 +135,8 @@ if os.path.isfile(icon_path):
 # by means of a file open dialog
 if len(argv) > 2:
     messagebox.showinfo(title="Too many arguments", 
-    message="Please provide \n* no argument or \n* the file name of the ToDoList as the only argument.")
+    message="Please provide \n* no argument or \n* the file name of the \
+        ToDoList as the only argument.")
     exit(1)
 elif len(argv) > 1:
     file_path = argv[1]
@@ -144,7 +152,8 @@ if os.path.isfile(file_path) == False:
         message = "The file \n" + file_path + "\ncould not be found.")
     exit(1)
 
-# Set working directory to make sure that relative file links will be evaluated correctly.
+# Set working directory to make sure that relative file links
+# will be evaluated correctly.
 if os.path.dirname(file_path):
     os.chdir(os.path.dirname(file_path))
 
