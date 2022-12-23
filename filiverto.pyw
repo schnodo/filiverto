@@ -2,7 +2,7 @@
 #
 # Check if files that are referenced by task list file links actually exist.
 # If not, write the Task IDs and defective file links to a CSV file.
-# Only tdl:// and file:// links are checked; so no validation of links to the 
+# Only tdl:// and file:// links are checked; so no validation of links to the
 # Internet is performed.
 
 import os
@@ -22,7 +22,7 @@ from lxml import etree
 # Verify that a file exists; if it is missing, add it to the list of missing
 # files.
 # full_link contains the match as it was found and how it will appear
-# in the report. 
+# in the report.
 # clean_link is the content of full_link formatted so that it can be used to
 # verify the existence of the file or directory.
 def check_and_add(id, full_link, missing_files):
@@ -30,8 +30,8 @@ def check_and_add(id, full_link, missing_files):
         # Remove the protocol identifier and direct task id references
         # for other task lists, such as tdl://test.tdl?1234.
         # Remove potentially trailing period characters from the punctuation
-        # in the surrounding text; a legal file name must not end with a period.            
-        clean_link = re.sub(r"tdl:/{2,3}", "", full_link)    
+        # in the surrounding text; a legal file name must not end with a period.
+        clean_link = re.sub(r"tdl:/{2,3}", "", full_link)
         clean_link = clean_link.split("?", 1)[0].rstrip(".")
 
         if len(clean_link.strip()) == 0 or clean_link.isnumeric():
@@ -44,30 +44,31 @@ def check_and_add(id, full_link, missing_files):
             # Empty link; nothing to do
             return
     elif "//" in full_link:
-        # All other protocols/hyperlinks are ignored        
+        # All other protocols/hyperlinks are ignored
         return
     else:
-        # If there is no preceding protocol identifiier, 
+        # If there is no preceding protocol identifiier,
         # the full link and the clean link are the same
         clean_link = full_link
 
     # Clean up %20 characters as in tdl://todolist%20test.tdl.
     clean_link = urllib.parse.unquote(clean_link)
 
-    if os.path.isfile(clean_link) == False and \
-                os.path.isdir(clean_link) == False:
+    if os.path.isfile(clean_link) == False and os.path.isdir(clean_link) == False:
         missing_files.append({"id": id, "file": full_link})
     return
+
 
 # Gather and check links from the FILEREFPATH element
 def process_FILEREFPATH(xml_tree):
     missing_files = []
     filerefpaths = xml_tree.xpath("//FILEREFPATH")
     for filerefpath in filerefpaths:
-        id = filerefpath.getparent().attrib['ID']
+        id = filerefpath.getparent().attrib["ID"]
         full_link = filerefpath.text
         check_and_add(id, full_link, missing_files)
     return missing_files, len(filerefpaths)
+
 
 # Gather and check links from the COMMENTS element
 def process_COMMENTS(xml_tree):
@@ -76,7 +77,7 @@ def process_COMMENTS(xml_tree):
     comments_elements = xml_tree.xpath("//COMMENTS")
 
     for comment_element in comments_elements:
-        id = comment_element.getparent().attrib['ID']
+        id = comment_element.getparent().attrib["ID"]
         comments = comment_element.text
 
         # Match tdl:// that includes spaces, marked by a "<" character
@@ -90,35 +91,43 @@ def process_COMMENTS(xml_tree):
         re_file_spaces = r"(?<=<)file:/{2,3}(?:[A-z]:)?[^<>\*\"|?:]*(?=>)"
         # Match file:// in parentheses; In that case, the trailing parenthesis
         # has to be excluded from the file path; there must not be any spaces
-        re_file_no_spaces = \
-                r"(?<!\()(?<!<)file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*|" +\
-                r"(?<=\()file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*(?=\))"
+        re_file_no_spaces = (
+            r"(?<!\()(?<!<)file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*|"
+            + r"(?<=\()file:/{2,3}(?:[A-z]:)?[^\s<>\*\"|?:]*(?=\))"
+        )
 
         matches = []
-        for pattern in [re_tdl_spaces, re_tdl_parentheses, 
-                        re_tdl_no_spaces, re_file_spaces, 
-                        re_file_no_spaces]:
+        for pattern in [
+            re_tdl_spaces,
+            re_tdl_parentheses,
+            re_tdl_no_spaces,
+            re_file_spaces,
+            re_file_no_spaces,
+        ]:
             matches += re.findall(pattern, comments)
-        for match in matches:     
+        for match in matches:
             check_and_add(id, match, missing_files)
         checked_links += len(matches)
     return missing_files, checked_links
 
+
 # Save the missing files report as "<<ToDoList name>>_missing_files.csv"
 def save_csv_report(file_path, missing_files):
     # newline='' is necessary to prevent Excel from showing empty lines.
-    # utf-8-sig needs to be chosen as encoding because Excel expects a BOM, 
+    # utf-8-sig needs to be chosen as encoding because Excel expects a BOM,
     # otherwise umlauts are not properly displayed.
     report_file = file_path.rstrip(".tdl") + "_missing_files.csv"
-    with open(report_file, 'w', newline='',encoding='utf-8-sig') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=',', 
-                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    with open(report_file, "w", newline="", encoding="utf-8-sig") as csvfile:
+        csvwriter = csv.writer(
+            csvfile, delimiter=",", quotechar="|", quoting=csv.QUOTE_MINIMAL
+        )
 
         # CSV header row
         csvwriter.writerow(["Task ID", "File Link"])
 
         for entry in missing_files:
-            csvwriter.writerow([entry['id'], entry['file']])    
+            csvwriter.writerow([entry["id"], entry["file"]])
+
 
 # Execution of the main routine starts here
 tk_root = tk.Tk()
@@ -127,29 +136,34 @@ tk_root.withdraw()
 # Try to load the ToDoList icon for the dialogs
 # It is assumed to be in the same directory as the script
 icon_path = ""
-icon_path = os.path.dirname(__file__) + '\ToDoList_2004.ico'
+icon_path = os.path.dirname(__file__) + "\ToDoList_2004.ico"
 if os.path.isfile(icon_path):
     tk_root.iconbitmap(icon_path)
 
 # Get the file name for the task list from an argument or
 # by means of a file open dialog
 if len(argv) > 2:
-    messagebox.showinfo(title="Too many arguments", 
-    message="Please provide \n* no argument or \n* the file name of the \
-        ToDoList as the only argument.")
+    messagebox.showinfo(
+        title="Too many arguments",
+        message="Please provide \n* no argument or \n* the file name of the \
+        ToDoList as the only argument.",
+    )
     exit(1)
 elif len(argv) > 1:
     file_path = argv[1]
 else:
     file_path = filedialog.askopenfilename(
-        initialdir=".", 
-        title = "Choose ToDoList for verifying file links", 
-        filetypes=[("Abstractspoon ToDoList", ".tdl")])
+        initialdir=".",
+        title="Choose ToDoList for verifying file links",
+        filetypes=[("Abstractspoon ToDoList", ".tdl")],
+    )
 
 if os.path.isfile(file_path) == False:
     if len(argv) > 1:
-        messagebox.showinfo(title="File not found", 
-        message = "The file \n" + file_path + "\ncould not be found.")
+        messagebox.showinfo(
+            title="File not found",
+            message="The file \n" + file_path + "\ncould not be found.",
+        )
     exit(1)
 
 # Set working directory to make sure that relative file links
@@ -170,9 +184,11 @@ num_links = num_filerefpath_links + num_comments_links
 
 if not missing_files:
     messagebox.showinfo(
-        title="Process completed", 
-        message = str(num_links) + f" link{'s'[:num_links^1]} checked.\n" + 
-            "Congratulations! There are no dangling file references.")
+        title="Process completed",
+        message=str(num_links)
+        + f" link{'s'[:num_links^1]} checked.\n"
+        + "Congratulations! There are no dangling file references.",
+    )
     exit(0)
 
 if len(missing_files) > 1:
@@ -182,8 +198,8 @@ else:
 
 save_csv_report(file_path, missing_files)
 messagebox.showinfo(
-    title="Process completed", 
-    message = str(num_links) + " links checked.\n" + 
-    str(len(missing_files)) + msg_text)
+    title="Process completed",
+    message=str(num_links) + " links checked.\n" + str(len(missing_files)) + msg_text,
+)
 
 exit(0)
