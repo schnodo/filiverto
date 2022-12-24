@@ -76,7 +76,6 @@ Currently, it does the following:
 ![Example of a legal Windows file name that does not look legal](https://github.com/schnodo/filiverto/blob/screenshots/unexpectedly_legal_file_name.jpg)
 
 ## Next steps
-- Figure out if it is possible to make filiverto usable without having to install packages via the command line.<br/>requirements.txt seems to be the way to go.
-- Improve the search patterns for better coverage
-- Improve the documentation of the source code
-- Improve general code quality
+- Figure out if it is possible to make filiverto usable without having to install packages via the command line.
+- Make filiverto installable through pip.
+- Create more test cases
