@@ -16,11 +16,13 @@ filiverto can be used as user-defined tool in ToDoList, making it possible to ve
 filiverto is written in Python.
 
 ## Setup and execution
-Assuming that Python is already installed on your system, simply copy the files contained in the repository into a directory and run <code>filiverto.pyw</code>.<br/>
+Assuming that Python is already installed on your system, simply copy the files contained in the repository into a directory and from a console window run<br/>
+<code>python filiverto.pyw</code>.<br/>
 
-If you haven't installed Python yet, you can download the most current version from the [Python website](https://www.python.org/downloads/). filiverto was tested with Python 3.10.
-
-filiverto uses the xlml package, which is not part of the standard library. If you don't have it installed already, add it by executing this command in a console:<br/>
+If it does not work, check the console window for error messages:
+- If you haven't installed Python yet, you can download the most current version from the [Python website](https://www.python.org/downloads/).<br/>
+filiverto was tested with Python 3.10.
+- filiverto uses the xlml package, which is not part of the standard library. If you don't have it installed already, add it by executing this command in the console window:<br/>
 <code>pip install lxml</code>
 
 ## How it works
@@ -76,6 +78,5 @@ Currently, it does the following:
 ![Example of a legal Windows file name that does not look legal](https://github.com/schnodo/filiverto/blob/screenshots/unexpectedly_legal_file_name.jpg)
 
 ## Next steps
-- Figure out if it is possible to make filiverto usable without having to install packages via the command line.
 - Make filiverto installable through pip.
 - Create more test cases
