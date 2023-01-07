@@ -80,4 +80,4 @@ Currently, it does the following:
 
 ## Next steps
 - Make filiverto installable through pip.
-- Create more test cases
+- Create more test cases.
