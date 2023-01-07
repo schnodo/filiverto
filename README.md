@@ -16,8 +16,8 @@ filiverto can be used as user-defined tool in ToDoList, making it possible to ve
 filiverto is written in Python.
 
 ## Setup and execution
-Assuming that Python is already installed on your system, simply copy the files contained in the repository into a directory and from a console window run<br/>
-<code>python filiverto.pyw</code>.<br/>
+Assuming that Python is already installed on your system, simply copy the files contained in the repository into a directory and from a console window run:<br/>
+<code>python filiverto.pyw [optional task list file path]</code><br/>
 
 If it does not work, check the console window for error messages:
 - If you haven't installed Python yet, you can download the most current version from the [Python website](https://www.python.org/downloads/).<br/>
@@ -25,6 +25,7 @@ filiverto was tested with Python 3.10.
 - filiverto uses the xlml package, which is not part of the standard library. If you don't have it installed already, add it by executing this command in the console window:<br/>
 <code>pip install lxml</code>
 
+Alternatively, there's a [single-file Windows executable](https://github.com/schnodo/filiverto/blob/main/output/filiverto.exe) available, which was created using [Auto PY to EXE](https://pypi.org/project/auto-py-to-exe/). Windows will probably warn you that filiverto "is not commonly downloaded and may be dangerous". I would agree that it is not commonly downloaded but filiverto is definitely not designed to be dangerous. 😊
 ## How it works
 Currently, it does the following:
 
