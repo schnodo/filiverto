@@ -19,7 +19,9 @@ filiverto is written in Python.
 Assuming that Python is already installed on your system, simply copy the files contained in the repository into a directory and from a console window run:<br/>
 <code>python filiverto.pyw [optional task list file path]</code><br/>
 
-If it does not work, check the console window for error messages:
+Starting with ToDoList 8.1.17, filiverto is already part of the official release. In that case, in the ToDoList installation directory, you will find filiverto under <code>...\\Resources\\Scripts\\File Link Verifier\\</code>.<br>
+
+If filiverto does not work, check the console window for error messages:
 - If you haven't installed Python yet, you can download the most current version from the [Python website](https://www.python.org/downloads/).<br/>
 filiverto was tested with Python 3.10.
 - filiverto uses the xlml package, which is not part of the standard library. If you don't have it installed already, add it by executing this command in the console window:<br/>
