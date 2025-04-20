@@ -9,7 +9,7 @@ filiverto checks XML task lists in [AbstractSpoon's ToDoList](https://github.com
   
 filiverto checks for "file links" and for links in the comments field.
 
-![Screenshot of ToDoList preferences with filiverto set up as user-defined tool](https://github.com/schnodo/filiverto/blob/screenshots/filiverto_user-defined-tool.jpg)
+![Screenshot of ToDoList preferences with filiverto set up as user-defined tool](screenshots/filiverto_user-defined-tool.jpg)
 
 filiverto can be used as user-defined tool in ToDoList, making it possible to verify the currently active task list.
 
@@ -78,7 +78,7 @@ Currently, it does the following:
   </ul>
 </ul>
 
-![Example of a legal Windows file name that does not look legal](https://github.com/schnodo/filiverto/blob/screenshots/unexpectedly_legal_file_name.jpg)
+![Example of a legal Windows file name that does not look legal](screenshots/unexpectedly_legal_file_name.jpg)
 
 ## Next steps
 - Make filiverto installable through pip.
