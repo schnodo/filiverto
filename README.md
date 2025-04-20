@@ -24,7 +24,7 @@ Starting with ToDoList 8.1.17, filiverto is already part of the official release
 If filiverto does not work, check the console window for error messages:
 - If you haven't installed Python yet, you can download the most current version from the [Python website](https://www.python.org/downloads/).<br/>
 filiverto was tested with Python 3.10.
-- filiverto uses the xlml package, which is not part of the standard library. If you don't have it installed already, add it by executing this command in the console window:<br/>
+- filiverto uses the lxml package, which is not part of the standard library. If you don't have it installed already, add it by executing this command in the console window:<br/>
 <code>pip install lxml</code>
 
 Alternatively, there's a [single-file Windows executable](https://github.com/schnodo/filiverto/blob/main/output/filiverto.exe) available, which was created using [Auto PY to EXE](https://pypi.org/project/auto-py-to-exe/). Windows will probably warn you that filiverto "is not commonly downloaded and may be dangerous". I would agree that it is not commonly downloaded but filiverto is definitely not designed to be dangerous. 😊
@@ -80,6 +80,3 @@ Currently, it does the following:
 
 ![Example of a legal Windows file name that does not look legal](screenshots/unexpectedly_legal_file_name.jpg)
 
-## Next steps
-- Make filiverto installable through pip.
-- Create more test cases.
